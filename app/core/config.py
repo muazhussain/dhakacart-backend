@@ -1,9 +1,6 @@
 """Application configuration loaded from environment variables and .env file."""
 
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -25,17 +22,17 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
-    app_name: str
-    debug: bool
+    app_name: str = "DhakaCart"
+    debug: bool = False
     database_url: str
     redis_url: str
     mongodb_url: str
     mongodb_db: str
     opensearch_url: str
     jwt_secret_key: str
-    jwt_algorithm: str
-    access_token_expire_minutes: int
-    refresh_token_expire_days: int
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
 
 
 settings = Settings()  # type: ignore[call-arg]
