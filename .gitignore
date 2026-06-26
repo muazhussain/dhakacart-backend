@@ -13,3 +13,6 @@ wheels/
 current-goal.md
 challenge.md
 CLAUDE.md
+
+# ENV
+.env
