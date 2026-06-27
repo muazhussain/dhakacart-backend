@@ -96,3 +96,28 @@ def decode_access_token(token: str) -> str:
     if not isinstance(sub, str):
         raise jwt.InvalidTokenError("Token missing sub claim.")
     return sub
+
+
+def decode_refresh_token(token: str) -> str:
+    """Decode and validate a JWT refresh token.
+
+    Args:
+        token (str): Encoded JWT.
+
+    Returns:
+        str: Subject claim (user ID).
+
+    Raises:
+        jwt.PyJWTError: If token is invalid, expired, or not a refresh token.
+    """
+    payload = jwt.decode(
+        token,
+        settings.jwt_secret_key,
+        algorithms=[settings.jwt_algorithm],
+    )
+    if payload.get("type") != "refresh":
+        raise jwt.InvalidTokenError("Not a refresh token.")
+    sub = payload.get("sub")
+    if not isinstance(sub, str):
+        raise jwt.InvalidTokenError("Token missing sub claim.")
+    return sub
