@@ -48,11 +48,26 @@ def create_access_token(subject: str) -> str:
     Returns:
         str: Encoded JWT.
     """
-    expire = datetime.now(UTC) + timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
     return jwt.encode(
         {"sub": subject, "exp": expire},
+        settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+    )
+
+
+def create_refresh_token(subject: str) -> str:
+    """Create a signed JWT refresh token.
+
+    Args:
+        subject (str): Token subject (User ID as string).
+
+    Returns:
+        str: Encoded JWT.
+    """
+    expire = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
+    return jwt.encode(
+        {"sub": subject, "exp": expire, "type": "refresh"},
         settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm,
     )
@@ -75,6 +90,8 @@ def decode_access_token(token: str) -> str:
         settings.jwt_secret_key,
         algorithms=[settings.jwt_algorithm],
     )
+    if payload.get("type") == "refresh":
+        raise jwt.InvalidTokenError("Refresh token cannot be used as access token.")
     sub = payload.get("sub")
     if not isinstance(sub, str):
         raise jwt.InvalidTokenError("Token missing sub claim.")
