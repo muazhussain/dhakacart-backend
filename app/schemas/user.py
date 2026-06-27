@@ -4,7 +4,7 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from app.models.user import UserRole
+from app.db.models.user import UserRole
 
 
 class RegisterRequest(BaseModel):
