@@ -89,7 +89,11 @@ async def login(db: AsyncSession, payload: LoginRequest) -> TokenResponse:
         InvalidCredentialsError: If credentials are wrong.
     """
     user = await db.scalar(select(User).where(User.email == payload.email))
-    if not user or not user.is_active or not verify_password(payload.password, user.hashed_password):
+    if (
+        not user
+        or not user.is_active
+        or not verify_password(payload.password, user.hashed_password)
+    ):
         raise InvalidCredentialsError
     return TokenResponse(
         access_token=create_access_token(str(user.id)),

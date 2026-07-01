@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.db.mongo import close_mongo, init_mongo
 from app.db.redis import close_redis, get_redis, init_redis
 
 
@@ -14,8 +15,10 @@ from app.db.redis import close_redis, get_redis, init_redis
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage startup and shutdown of shared resources."""
     await init_redis()
+    await init_mongo()
     yield
     await close_redis()
+    await close_mongo()
 
 
 app = FastAPI(
