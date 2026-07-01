@@ -60,7 +60,7 @@ async def register(db: AsyncSession, payload: RegisterRequest) -> User:
         EmailTakenError: If email is already registered.
     """
     if await db.scalar(select(User).where(User.email == payload.email)):
-        raise EmailTakenError(payload.email)
+        raise EmailTakenError(payload.email) from None
     user = User(
         email=payload.email,
         hashed_password=hash_password(payload.password),
@@ -71,7 +71,7 @@ async def register(db: AsyncSession, payload: RegisterRequest) -> User:
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise EmailTakenError(payload.email)
+        raise EmailTakenError(payload.email) from None
     return user
 
 
@@ -178,13 +178,13 @@ async def update_me(
         if await db.scalar(
             select(User).where(User.email == payload.email, User.id != user_id)
         ):
-            raise EmailTakenError(payload.email)
+            raise EmailTakenError(payload.email) from None
         user.email = payload.email
     try:
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise EmailTakenError(payload.email)
+        raise EmailTakenError(payload.email) from None
     return user
 
 

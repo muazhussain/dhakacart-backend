@@ -1,18 +1,22 @@
 """FastAPI application factory."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.db.mongo import close_mongo, init_mongo
 from app.db.redis import close_redis, get_redis, init_redis
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Manage startup and shutdown of shared resources."""
     await init_redis()
     await init_mongo()
@@ -29,6 +33,10 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.debug else None,
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+app.add_middleware(SlowAPIMiddleware)
 
 
 @app.get("/health", tags=["health"])
