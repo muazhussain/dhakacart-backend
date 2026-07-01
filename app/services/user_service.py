@@ -130,7 +130,7 @@ async def logout(redis: Redis, refresh_token: str) -> None:
         refresh_token (str): Token to invalidate.
     """
     ttl = settings.refresh_token_expire_days * 86400
-    await redis.setex(f"blacklist:{refresh_token}", ttl, "1")
+    await redis.set(f"blacklist:{refresh_token}", "1", ex=ttl)
 
 
 async def get_by_id(db: AsyncSession, user_id: uuid.UUID) -> User:
