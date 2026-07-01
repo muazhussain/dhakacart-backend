@@ -4,6 +4,7 @@ import uuid
 
 from redis.asyncio import Redis
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -66,7 +67,11 @@ async def register(db: AsyncSession, payload: RegisterRequest) -> User:
         role=payload.role,
     )
     db.add(user)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise EmailTakenError(payload.email)
     return user
 
 
@@ -171,7 +176,11 @@ async def update_me(
         ):
             raise EmailTakenError(payload.email)
         user.email = payload.email
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise EmailTakenError(payload.email)
     return user
 
 
