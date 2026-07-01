@@ -180,11 +180,13 @@ async def update_me(
         ):
             raise EmailTakenError(payload.email) from None
         user.email = payload.email
-    try:
+        try:
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
+            raise EmailTakenError(payload.email) from None
+    else:
         await db.commit()
-    except IntegrityError:
-        await db.rollback()
-        raise EmailTakenError(payload.email) from None
     return user
 
 
