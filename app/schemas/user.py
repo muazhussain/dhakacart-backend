@@ -47,6 +47,13 @@ class UserResponse(BaseModel):
     is_active: bool
 
 
+class UserPage(BaseModel):
+    """Paginated list of users."""
+
+    items: list[UserResponse]
+    total: int
+
+
 class UpdateMeRequest(BaseModel):
     """Payload for updating own profile."""
 

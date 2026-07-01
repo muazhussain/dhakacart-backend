@@ -3,7 +3,7 @@
 import uuid
 
 from redis.asyncio import Redis
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -224,8 +224,10 @@ async def deactivate_me(db: AsyncSession, user_id: uuid.UUID) -> None:
     await db.commit()
 
 
-async def list_users(db: AsyncSession, skip: int = 0, limit: int = 20) -> list[User]:
-    """Fetch a paginated list of all users.
+async def list_users(
+    db: AsyncSession, skip: int = 0, limit: int = 20
+) -> tuple[list[User], int]:
+    """Fetch a paginated list of all users with a total count.
 
     Args:
         db (AsyncSession): Database session.
@@ -233,10 +235,11 @@ async def list_users(db: AsyncSession, skip: int = 0, limit: int = 20) -> list[U
         limit (int): Maximum records to return.
 
     Returns:
-        list[User]: List of users.
+        tuple[list[User], int]: Page of users and the total row count.
     """
+    total = await db.scalar(select(func.count()).select_from(User)) or 0
     result = await db.scalars(select(User).offset(skip).limit(limit))
-    return list(result.all())
+    return list(result.all()), total
 
 
 async def admin_update_user(
