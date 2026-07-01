@@ -20,7 +20,7 @@ class Settings(BaseSettings):
         refresh_token_expire_days: Refresh token expiry duration in days.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
     app_name: str = "DhakaCart"
     debug: bool = False
